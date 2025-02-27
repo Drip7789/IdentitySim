@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Life Simulation</title>
+    <style>
+        /* Main Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f7;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Graph Styles */
+        .graph-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            height: 350px;
+            position: relative;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .controls-left, .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .graph-toggle {
+            display: inline-flex;
+            background-color: #f0f0f5;
+            padding: 2px;
+            border-radius: 30px;
+        }
+        
+        .graph-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .graph-toggle button.active {
+            background-color: #4a66e0;
+            color: white;
+        }
+        
+        .sensitivity-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #f0f0f5;
+            padding: 8px 16px;
+            border-radius: 30px;
+        }
+        
+        .reset-button {
+            background-color: #f0f0f5;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-weight: 500;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .reset-button:hover {
+            background-color: #e6e6f0;
+            transform: translateY(-2px);
+        }
+        
+        .reset-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Slider Container Styles */
+        .slider-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .slider-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .slider-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .slider-item {
+            flex: 1 1 calc(10% - 15px);
+            min-width: 120px;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: #f8f8fb;
+            transition: all 0.3s ease;
+        }
+        
+        .slider-item.highlighted {
+            box-shadow: 0 0 0 2px #4a66e0;
+            background-color: #f0f2ff;
+            transform: translateY(-2px);
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .slider-value {
+            color: #4a66e0;
+            font-weight: 600;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            outline: none;
+            border-radius: 3px;
+            transition: opacity 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a66e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a66e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Log Container Styles */
+        .log-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .log-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f5;
+            font-size: 14px;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-item {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f8f8fb;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        
+        .log-item.highlighted {
+            background-color: #f0f2ff;
+            border: 1px solid #e0e5ff;
+            font-weight: 600;
+        }
+        
+        .log-arrow-up {
+            color: #2ecc71;
+        }
+        
+        .log-arrow-down {
+            color: #e74c3c;
+        }
+        
+        /* Canvas Styling */
+        canvas {
+            width: 100%;
+            height: calc(100% - 40px);
+        }
+        
+        /* Accuracy Meter Styles */
+        .accuracy-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #f0f0f5;
+            padding: 8px 16px;
+            border-radius: 30px;
+            position: relative;
+        }
+        
+        .accuracy-value {
+            font-weight: 600;
+            min-width: 45px;
+            text-align: right;
+        }
+        
+        .accuracy-high {
+            color: #2ecc71;
+        }
+        
+        .accuracy-medium {
+            color: #f39c12;
+        }
+        
+        .accuracy-low {
+            color: #e74c3c;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+        
+        .tooltip-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 13px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            max-width: 250px;
+            word-wrap: break-word;
+            /* Default positioning - will be overridden by JavaScript */
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        /* Default arrow pointing down (for tooltip above) */
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+            transition: all 0.3s;
+        }
+        
+        /* Styles for tooltip positioned below */
+        .tooltip-text.tooltip-below::after {
+            top: auto;
+            bottom: 100%;
+            border-color: transparent transparent #555 transparent;
+        }
+        
+        /* Styles for tooltip positioned right */
+        .tooltip-text.tooltip-right::after {
+            top: 50%;
+            left: -10px;
+            margin-top: -5px;
+            margin-left: 0;
+            border-color: transparent #555 transparent transparent;
+        }
+        
+        /* Styles for tooltip positioned left */
+        .tooltip-text.tooltip-left::after {
+            top: 50%;
+            left: auto;
+            right: -10px;
+            margin-top: -5px;
+            border-color: transparent transparent transparent #555;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .contradiction-highlight {
+            position: absolute;
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 1px dashed rgba(231, 76, 60, 0.5);
+            border-radius: 8px;
+            z-index: -1;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        .contradiction-message {
+            background-color: #fff9f9;
+            border-left: 3px solid #e74c3c;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+            display: none;
+        }
+        
+        .contradiction-message ul {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        .contradiction-message li {
+            margin-bottom: 4px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .slider-row {
+                flex-direction: column;
+            }
+            
+            .slider-item {
+                flex: 1 1 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-container">
+            <div class="controls">
+                <div class="controls-left">
+                    <div class="graph-toggle">
+                        <button id="lineGraph" class="active">Line Graph</button>
+                        <button id="barGraph">Bar Graph</button>
+                    </div>
+                    <div class="accuracy-container">
+                        <label>Data Accuracy:</label>
+                        <div class="accuracy-value" id="accuracyValue">100%</div>
+                        <div class="tooltip">
+                            <div class="tooltip-icon">i</div>
+                            <span class="tooltip-text">This measures how realistic your current combination of life attributes is. Lower values indicate potentially contradictory or unrealistic combinations.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls-right">
+                    <div class="sensitivity-container">
+                        <label for="sensitivity">Sensitivity:</label>
+                        <div class="tooltip">
+                            <div class="tooltip-icon">i</div>
+                            <span class="tooltip-text">This controls how strongly changes to one attribute affect related attributes. Higher sensitivity creates stronger ripple effects throughout the system.</span>
+                        </div>
+                        <input type="range" id="sensitivity" min="0" max="100" value="50">
+                        <span id="sensitivityValue">50%</span>
+                    </div>
+                    <button id="resetButton" class="reset-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 2v6h6"></path>
+                            <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
+                            <path d="M21 22v-6h-6"></path>
+                            <path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path>
+                        </svg>
+                        Reset All
+                    </button>
+                </div>
+            </div>
+            <div class="contradiction-message" id="contradictionMessage">
+                <strong>Detected unrealistic combinations:</strong>
+                <ul id="contradictionsList"></ul>
+            </div>
+            <canvas id="graphCanvas"></canvas>
+        </div>
+        
+        <div class="slider-container">
+            <div class="slider-rows">
+                <div class="slider-row" id="sliderRow1">
+                    <!-- First row of sliders will be generated here -->
+                </div>
+                <div class="slider-row" id="sliderRow2">
+                    <!-- Second row of sliders will be generated here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="log-container">
+            <div class="log-title">Recent Changes</div>
+            <div id="logContainer">
+                <!-- Log entries will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Life attributes configuration
+            const attributes = [
+                { id: 'age', name: 'Age', value: 50 },
+                { id: 'happiness', name: 'Happiness', value: 50 },
+                { id: 'financial', name: 'Financial Stability', value: 50 },
+                { id: 'physical', name: 'Physical Health', value: 50 },
+                { id: 'mental', name: 'Mental Health', value: 50 },
+                { id: 'intelligence', name: 'Intelligence', value: 50 },
+                { id: 'creativity', name: 'Creativity', value: 50 },
+                { id: 'empathy', name: 'Empathy', value: 50 },
+                { id: 'social', name: 'Social Life', value: 50 },
+                { id: 'relationship', name: 'Relationship Quality', value: 50 },
+                { id: 'career', name: 'Career Progression', value: 50 },
+                { id: 'education', name: 'Educational Attainment', value: 50 },
+                { id: 'stress', name: 'Stress Levels', value: 50 },
+                { id: 'ambition', name: 'Ambition', value: 50 },
+                { id: 'workLife', name: 'Work-Life Balance', value: 50 },
+                { id: 'environmental', name: 'Environmental Consciousness', value: 50 },
+                { id: 'selfEsteem', name: 'Self-Esteem', value: 50 },
+                { id: 'riskTolerance', name: 'Risk Tolerance', value: 50 },
+                { id: 'energy', name: 'Energy Levels', value: 50 },
+                { id: 'lifeSatisfaction', name: 'Life Satisfaction', value: 50 }
+            ];
+            
+            // Define interdependencies - for each attribute, specify which other attributes it affects and how
+            const interdependencies = {
+                'age': {
+                    'physical': -0.3,
+                    'energy': -0.3,
+                    'intelligence': 0.4,
+                    'riskTolerance': -0.2,
+                    'empathy': 0.3
+                },
+                'happiness': {
+                    'mental': 0.5,
+                    'selfEsteem': 0.4,
+                    'energy': 0.3,
+                    'stress': -0.4,
+                    'lifeSatisfaction': 0.6,
+                    'physical': 0.2
+                },
+                'financial': {
+                    'stress': -0.5,
+                    'happiness': 0.3,
+                    'lifeSatisfaction': 0.4,
+                    'workLife': 0.2,
+                    'selfEsteem': 0.3
+                },
+                'physical': {
+                    'energy': 0.5,
+                    'mental': 0.3,
+                    'stress': -0.3,
+                    'lifeSatisfaction': 0.3,
+                    'age': -0.2
+                },
+                'mental': {
+                    'happiness': 0.5,
+                    'selfEsteem': 0.4,
+                    'stress': -0.5,
+                    'creativity': 0.3,
+                    'energy': 0.3,
+                    'lifeSatisfaction': 0.4
+                },
+                'intelligence': {
+                    'education': 0.4,
+                    'career': 0.3,
+                    'creativity': 0.3,
+                    'financial': 0.2,
+                    'mental': 0.2
+                },
+                'creativity': {
+                    'intelligence': 0.2,
+                    'happiness': 0.3,
+                    'selfEsteem': 0.3,
+                    'career': 0.2,
+                    'environmental': 0.2
+                },
+                'empathy': {
+                    'social': 0.4,
+                    'relationship': 0.5,
+                    'mental': 0.2,
+                    'selfEsteem': 0.2,
+                    'happiness': 0.2
+                },
+                'social': {
+                    'happiness': 0.4,
+                    'relationship': 0.4,
+                    'stress': -0.3,
+                    'mental': 0.3,
+                    'energy': 0.2
+                },
+                'relationship': {
+                    'happiness': 0.4,
+                    'stress': -0.3,
+                    'lifeSatisfaction': 0.4,
+                    'social': 0.3,
+                    'workLife': 0.2
+                },
+                'career': {
+                    'financial': 0.5,
+                    'stress': 0.3,
+                    'workLife': -0.3,
+                    'selfEsteem': 0.3,
+                    'lifeSatisfaction': 0.3
+                },
+                'education': {
+                    'intelligence': 0.3,
+                    'career': 0.4,
+                    'financial': 0.3,
+                    'selfEsteem': 0.2
+                },
+                'stress': {
+                    'mental': -0.5,
+                    'physical': -0.3,
+                    'happiness': -0.4,
+                    'energy': -0.4,
+                    'selfEsteem': -0.3,
+                    'creativity': -0.2
+                },
+                'ambition': {
+                    'career': 0.4,
+                    'stress': 0.3,
+                    'education': 0.3,
+                    'workLife': -0.3,
+                    'energy': 0.2,
+                    'riskTolerance': 0.3
+                },
+                'workLife': {
+                    'stress': -0.4,
+                    'happiness': 0.4,
+                    'physical': 0.3,
+                    'mental': 0.3,
+                    'relationship': 0.3,
+                    'energy': 0.3
+                },
+                'environmental': {
+                    'lifeSatisfaction': 0.2,
+                    'selfEsteem': 0.2,
+                    'happiness': 0.1,
+                    'empathy': 0.2
+                },
+                'selfEsteem': {
+                    'mental': 0.4,
+                    'happiness': 0.4,
+                    'social': 0.3,
+                    'stress': -0.3,
+                    'energy': 0.2,
+                    'lifeSatisfaction': 0.3
+                },
+                'riskTolerance': {
+                    'career': 0.3,
+                    'stress': 0.2,
+                    'financial': 0.3,
+                    'ambition': 0.3,
+                    'creativity': 0.2
+                },
+                'energy': {
+                    'physical': 0.4,
+                    'happiness': 0.3,
+                    'career': 0.3,
+                    'social': 0.3,
+                    'stress': -0.3,
+                    'mental': 0.2
+                },
+                'lifeSatisfaction': {
+                    'happiness': 0.7,
+                    'mental': 0.4,
+                    'stress': -0.4,
+                    'selfEsteem': 0.4,
+                    'physical': 0.3,
+                    'workLife': 0.4
+                }
+            };
+            
+            // Universal sensitivity value
+            let sensitivity = 0.5;
+            
+            // Current graph type: 'line' or 'bar'
+            let currentGraphType = 'line';
+            
+            // Track the last directly adjusted slider for highlighting
+            let lastAdjustedSliderId = null;
+            
+            // Initialize sliders
+            function createSliders() {
+                const row1 = document.getElementById('sliderRow1');
+                const row2 = document.getElementById('sliderRow2');
+                
+                attributes.forEach((attr, index) => {
+                    const sliderItem = document.createElement('div');
+                    sliderItem.className = 'slider-item';
+                    sliderItem.id = `slider-item-${attr.id}`;
+                    
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'slider-label';
+                    
+                    const label = document.createElement('span');
+                    label.textContent = attr.name;
+                    
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'slider-value';
+                    valueSpan.id = `${attr.id}-value`;
+                    valueSpan.textContent = attr.value;
+                    
+                    labelDiv.appendChild(label);
+                    labelDiv.appendChild(valueSpan);
+                    
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.min = '0';
+                    slider.max = '100';
+                    slider.value = attr.value;
+                    slider.id = attr.id;
+                    
+                    slider.addEventListener('input', function() {
+                        // Update the attribute value
+                        const oldValue = attributes.find(a => a.id === attr.id).value;
+                        const newValue = parseInt(this.value);
+                        attributes.find(a => a.id === attr.id).value = newValue;
+                        
+                        // Update value display
+                        document.getElementById(`${attr.id}-value`).textContent = newValue;
+                        
+                        // Highlight this slider
+                        highlightSlider(attr.id);
+                        
+                        // Apply interdependencies
+                        applyInterdependencies(attr.id, oldValue, newValue);
+                        
+                        // Update graph
+                        updateGraph();
+                    });
+                    
+                    sliderItem.appendChild(labelDiv);
+                    sliderItem.appendChild(slider);
+                    
+                    // Add to appropriate row
+                    if (index < 10) {
+                        row1.appendChild(sliderItem);
+                    } else {
+                        row2.appendChild(sliderItem);
+                    }
+                });
+            }
+            
+            // Highlight the slider that was directly adjusted
+            function highlightSlider(sliderId) {
+                // Remove previous highlight
+                if (lastAdjustedSliderId) {
+                    document.getElementById(`slider-item-${lastAdjustedSliderId}`).classList.remove('highlighted');
+                }
+                
+                // Add new highlight
+                document.getElementById(`slider-item-${sliderId}`).classList.add('highlighted');
+                lastAdjustedSliderId = sliderId;
+            }
+            
+            // Apply interdependencies based on slider change
+            function applyInterdependencies(changedId, oldValue, newValue) {
+                const delta = newValue - oldValue;
+                if (delta === 0) return;
+                
+                // Store original values to log changes
+                const originalValues = {};
+                attributes.forEach(attr => {
+                    originalValues[attr.id] = attr.value;
+                });
+                
+                // Get interdependencies for the changed attribute
+                const dependencies = interdependencies[changedId];
+                if (!dependencies) return;
+                
+                // Track any overflows for batch processing
+                const overflows = [];
+                
+                // Apply changes to related attributes with sensitivity factor
+                Object.keys(dependencies).forEach(targetId => {
+                    const attribute = attributes.find(a => a.id === targetId);
+                    if (!attribute) return;
+                    
+                    // Calculate change based on dependency strength and sensitivity
+                    // Apply sensitivity adjustment: 
+                    // - At sensitivity = 0.5 (50%), the effect is as defined
+                    // - At sensitivity = 1 (100%), the effect is doubled
+                    // - At sensitivity = 0 (0%), the effect is halved
+                    const impactFactor = dependencies[targetId] * (0.5 + sensitivity);
+                    let change = delta * impactFactor;
+                    
+                    // Apply the change
+                    let newTargetValue = attribute.value + change;
+                    
+                    // Handle overflow redistribution
+                    if (newTargetValue < 0 || newTargetValue > 100) {
+                        const overflow = newTargetValue < 0 ? newTargetValue : newTargetValue - 100;
+                        newTargetValue = Math.max(0, Math.min(100, newTargetValue));
+                        
+                        // Collect overflows for batch processing at the end
+                        overflows.push({
+                            targetId: targetId,
+                            overflow: overflow
+                        });
+                    }
+                    
+                    // Update the target attribute value
+                    attribute.value = newTargetValue;
+                    
+                    // Update the slider and display
+                    const slider = document.getElementById(targetId);
+                    if (slider) {
+                        slider.value = Math.round(newTargetValue);
+                        document.getElementById(`${targetId}-value`).textContent = Math.round(newTargetValue);
+                    }
+                });
+                
+                // Process collected overflows after initial changes applied
+                // This prevents cascading updates from interfering with one another
+                overflows.forEach(item => {
+                    redistributeOverflow(item.targetId, item.overflow);
+                });
+                
+                // Log changes with arrows
+                logChanges(originalValues);
+                
+                // Update the data accuracy display
+                updateDataAccuracy();
+            }
+            
+            // Redistribute overflow to related attributes with enhanced logic
+            function redistributeOverflow(attributeId, overflowAmount) {
+                // Create a tracking system to prevent infinite recursion
+                const processed = new Set();
+                processed.add(attributeId);
+                
+                // Get primary interdependencies for this attribute
+                const primaryDependencies = {};
+                const secondaryDependencies = {};
+                
+                // Find all attributes that are directly related to this attribute
+                Object.keys(interdependencies).forEach(sourceId => {
+                    // Add attributes that this attribute directly affects
+                    if (sourceId === attributeId) {
+                        Object.keys(interdependencies[sourceId]).forEach(targetId => {
+                            if (targetId !== attributeId && !processed.has(targetId)) {
+                                primaryDependencies[targetId] = interdependencies[sourceId][targetId];
+                            }
+                        });
+                    }
+                    
+                    // Add attributes that directly affect this attribute
+                    if (interdependencies[sourceId][attributeId] && sourceId !== attributeId && !processed.has(sourceId)) {
+                        primaryDependencies[sourceId] = interdependencies[sourceId][attributeId];
+                    }
+                });
+                
+                // If no primary dependencies, try to find secondary connections
+                if (Object.keys(primaryDependencies).length === 0) {
+                    // Look for second-order connections (connections of connections)
+                    Object.keys(interdependencies).forEach(sourceId => {
+                        if (interdependencies[sourceId][attributeId]) {
+                            // This attribute affects our target, now find what affects this one
+                            Object.keys(interdependencies).forEach(secondarySourceId => {
+                                if (interdependencies[secondarySourceId][sourceId] && 
+                                    secondarySourceId !== attributeId && 
+                                    !processed.has(secondarySourceId)) {
+                                    secondaryDependencies[secondarySourceId] = 
+                                        interdependencies[secondarySourceId][sourceId] * 0.5; // Reduced impact for secondary
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Combine primary and secondary dependencies, with priority to primary
+                const dependencies = {...secondaryDependencies, ...primaryDependencies};
+                
+                const relatedIds = Object.keys(dependencies);
+                if (relatedIds.length === 0) {
+                    // If still no dependencies found, distribute across all attributes as a last resort
+                    attributes.forEach(attr => {
+                        if (attr.id !== attributeId && !processed.has(attr.id)) {
+                            dependencies[attr.id] = 0.1; // Small weight for non-directly related attributes
+                        }
+                    });
+                }
+                
+                // Get final list of IDs to redistribute to
+                const finalRelatedIds = Object.keys(dependencies);
+                if (finalRelatedIds.length === 0) return; // Nothing to redistribute to
+                
+                // Calculate total impact weight
+                let totalWeight = 0;
+                finalRelatedIds.forEach(id => {
+                    // We take the absolute value because we want to redistribute based on strength
+                    // of relationship, not direction
+                    totalWeight += Math.abs(dependencies[id]);
+                });
+                
+                // If no weights found, distribute equally
+                if (totalWeight === 0) {
+                    totalWeight = finalRelatedIds.length;
+                    finalRelatedIds.forEach(id => {
+                        dependencies[id] = 1;
+                    });
+                }
+                
+                // Counter to track how much overflow is still left to redistribute
+                let remainingOverflow = overflowAmount;
+                const secondaryRedistribution = [];
+                
+                // Apply redistribution proportional to impact weight
+                finalRelatedIds.forEach(id => {
+                    const attribute = attributes.find(a => a.id === id);
+                    if (!attribute) return;
+                    
+                    // Calculate proportional change (sign is inverted for redistribution)
+                    const proportion = Math.abs(dependencies[id]) / totalWeight;
+                    
+                    // Determine redistribution direction - should align with relationship direction
+                    const relationshipSign = Math.sign(dependencies[id]);
+                    // If overflow is positive (exceeding 100), and relationship is positive, 
+                    // we want to decrease related values
+                    // If overflow is negative (below 0), and relationship is positive, 
+                    // we want to increase related values
+                    const directionMultiplier = (overflowAmount > 0) ? -1 : 1;
+                    
+                    // This accounts for relationship direction
+                    const redistributionAmount = overflowAmount * proportion * relationshipSign * directionMultiplier;
+                    
+                    // Apply change with sensitivity factor
+                    let newValue = attribute.value + redistributionAmount * (0.5 + sensitivity);
+                    
+                    // Check if this redistribution would cause another overflow
+                    if (newValue < 0 || newValue > 100) {
+                        // Calculate secondary overflow
+                        const secondaryOverflow = newValue < 0 ? newValue : (newValue - 100);
+                        
+                        // Track for secondary redistribution
+                        secondaryRedistribution.push({
+                            id: id,
+                            overflow: secondaryOverflow
+                        });
+                        
+                        // Clamp this value
+                        newValue = Math.max(0, Math.min(100, newValue));
+                        
+                        // Adjust the remaining overflow based on how much we could apply
+                        const appliedChange = newValue - attribute.value;
+                        remainingOverflow -= (appliedChange / ((0.5 + sensitivity) * proportion * relationshipSign * directionMultiplier));
+                    }
+                    
+                    // Update attribute and UI
+                    attribute.value = newValue;
+                    const slider = document.getElementById(id);
+                    if (slider) {
+                        slider.value = Math.round(newValue);
+                        document.getElementById(`${id}-value`).textContent = Math.round(newValue);
+                    }
+                    
+                    // Add to processed set to prevent reprocessing
+                    processed.add(id);
+                });
+                
+                // Handle secondary redistribution if needed and if there's still overflow
+                if (secondaryRedistribution.length > 0 && Math.abs(remainingOverflow) > 1) {
+                    secondaryRedistribution.forEach(item => {
+                        // Only process significant overflows to prevent infinite cascading
+                        if (Math.abs(item.overflow) > 2) {
+                            redistributeOverflow(item.id, item.overflow);
+                        }
+                    });
+                }
+            }
+            
+            // Log changes with arrows
+            function logChanges(originalValues) {
+                const logContainer = document.getElementById('logContainer');
+                
+                // Create a new log entry
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                // Add the directly adjusted slider first
+                if (lastAdjustedSliderId) {
+                    const attr = attributes.find(a => a.id === lastAdjustedSliderId);
+                    const diff = attr.value - originalValues[attr.id];
+                    if (Math.abs(diff) > 0.5) {
+                        const span = document.createElement('span');
+                        span.className = 'log-item highlighted';
+                        span.innerHTML = `${attr.name} <span class="${diff > 0 ? 'log-arrow-up' : 'log-arrow-down'}">${diff > 0 ? '↑' : '↓'}</span>`;
+                        logEntry.appendChild(span);
+                    }
+                }
+                
+                // Add all other changes
+                attributes.forEach(attr => {
+                    if (attr.id === lastAdjustedSliderId) return;
+                    
+                    const diff = attr.value - originalValues[attr.id];
+                    if (Math.abs(diff) > 0.5) { // Only log significant changes
+                        const span = document.createElement('span');
+                        span.className = 'log-item';
+                        span.innerHTML = `${attr.name} <span class="${diff > 0 ? 'log-arrow-up' : 'log-arrow-down'}">${diff > 0 ? '↑' : '↓'}</span>`;
+                        logEntry.appendChild(span);
+                    }
+                });
+                
+                // Only add if there are actual changes
+                if (logEntry.children.length > 0) {
+                    // Add to log container
+                    logContainer.insertBefore(logEntry, logContainer.firstChild);
+                    
+                    // Limit log entries
+                    if (logContainer.children.length > 5) {
+                        logContainer.removeChild(logContainer.lastChild);
+                    }
+                }
+            }
+            
+            // Initialize graph
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions based on its container
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight - 60; // Account for controls
+            }
+            
+            // Draw the graph
+            function updateGraph() {
+                resizeCanvas();
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (currentGraphType === 'line') {
+                    drawLineGraph();
+                } else {
+                    drawBarGraph();
+                }
+            }
+            
+            // Draw line graph
+            function drawLineGraph() {
+                // Settings
+                const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+                const graphWidth = canvas.width - padding.left - padding.right;
+                const graphHeight = canvas.height - padding.top - padding.bottom;
+                
+                // Background
+                ctx.fillStyle = '#f8f8fb';
+                ctx.fillRect(padding.left, padding.top, graphWidth, graphHeight);
+                
+                // Draw axes
+                ctx.beginPath();
+                ctx.strokeStyle = '#ccc';
+                ctx.lineWidth = 1;
+                ctx.moveTo(padding.left, padding.top);
+                ctx.lineTo(padding.left, canvas.height - padding.bottom);
+                ctx.lineTo(canvas.width - padding.right, canvas.height - padding.bottom);
+                ctx.stroke();
+                
+                // Draw grid lines and labels
+                ctx.beginPath();
+                ctx.strokeStyle = '#eee';
+                for (let i = 0; i <= 10; i++) {
+                    const y = padding.top + (graphHeight * i / 10);
+                    ctx.moveTo(padding.left, y);
+                    ctx.lineTo(canvas.width - padding.right, y);
+                    
+                    // Add scale labels
+                    ctx.fillStyle = '#888';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '12px Arial';
+                    ctx.fillText((100 - i * 10).toString(), padding.left - 10, y);
+                }
+                ctx.stroke();
+                
+                // Add title
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('Life Attributes', canvas.width / 2, 15);
+                
+                // Plot data
+                const pointSpacing = graphWidth / (attributes.length - 1);
+                
+                // Draw area under the line
+                ctx.beginPath();
+                ctx.moveTo(padding.left, canvas.height - padding.bottom);
+                
+                attributes.forEach((attr, index) => {
+                    const x = padding.left + (index * pointSpacing);
+                    const y = padding.top + graphHeight - (attr.value / 100 * graphHeight);
+                    
+                    if (index === 0) {
+                        ctx.lineTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.lineTo(padding.left + (attributes.length - 1) * pointSpacing, canvas.height - padding.bottom);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(74, 102, 224, 0.1)';
+                ctx.fill();
+                
+                // Draw lines
+                ctx.beginPath();
+                ctx.strokeStyle = '#4a66e0';
+                ctx.lineWidth = 2;
+                
+                attributes.forEach((attr, index) => {
+                    const x = padding.left + (index * pointSpacing);
+                    const y = padding.top + graphHeight - (attr.value / 100 * graphHeight);
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    // Draw points
+                    ctx.fillStyle = attr.id === lastAdjustedSliderId ? '#ff6b6b' : '#4a66e0';
+                    ctx.beginPath();
+                    ctx.arc(x, y, attr.id === lastAdjustedSliderId ? 6 : 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw labels
+                    ctx.fillStyle = '#666';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.font = '10px Arial';
+                    
+                    // Rotate the text for better readability
+                    ctx.save();
+                    ctx.translate(x, canvas.height - padding.bottom + 10);
+                    ctx.rotate(Math.PI / 4);
+                    ctx.fillText(attr.name, 0, 0);
+                    ctx.restore();
+                });
+                
+                ctx.stroke();
+            }
+            
+            // Draw bar graph
+            function drawBarGraph() {
+                // Settings
+                const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+                const graphWidth = canvas.width - padding.left - padding.right;
+                const graphHeight = canvas.height - padding.top - padding.bottom;
+                
+                // Background
+                ctx.fillStyle = '#f8f8fb';
+                ctx.fillRect(padding.left, padding.top, graphWidth, graphHeight);
+                
+                // Draw axes
+                ctx.beginPath();
+                ctx.strokeStyle = '#ccc';
+                ctx.lineWidth = 1;
+                ctx.moveTo(padding.left, padding.top);
+                ctx.lineTo(padding.left, canvas.height - padding.bottom);
+                ctx.lineTo(canvas.width - padding.right, canvas.height - padding.bottom);
+                ctx.stroke();
+                
+                // Draw grid lines and labels
+                ctx.beginPath();
+                ctx.strokeStyle = '#eee';
+                for (let i = 0; i <= 10; i++) {
+                    const y = padding.top + (graphHeight * i / 10);
+                    ctx.moveTo(padding.left, y);
+                    ctx.lineTo(canvas.width - padding.right, y);
+                    
+                    // Add scale labels
+                    ctx.fillStyle = '#888';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '12px Arial';
+                    ctx.fillText((100 - i * 10).toString(), padding.left - 10, y);
+                }
+                ctx.stroke();
+                
+                // Add title
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('Life Attributes', canvas.width / 2, 15);
+                
+                // Draw bars
+                const barWidth = (graphWidth / attributes.length) * 0.7;
+                const barSpacing = graphWidth / attributes.length;
+                
+                attributes.forEach((attr, index) => {
+                    const x = padding.left + (index * barSpacing);
+                    const barHeight = (attr.value / 100) * graphHeight;
+                    const y = canvas.height - padding.bottom - barHeight;
+                    
+                    // Create gradient for bars
+                    const gradient = ctx.createLinearGradient(x, y, x, canvas.height - padding.bottom);
+                    
+                    if (attr.id === lastAdjustedSliderId) {
+                        gradient.addColorStop(0, '#ff6b6b');
+                        gradient.addColorStop(1, '#ff9f9f');
+                        ctx.fillStyle = gradient;
+                    } else {
+                        gradient.addColorStop(0, '#4a66e0');
+                        gradient.addColorStop(1, '#7d92e8');
+                        ctx.fillStyle = gradient;
+                    }
+                    
+                    // Draw bar with rounded top
+                    ctx.beginPath();
+                    ctx.moveTo(x, canvas.height - padding.bottom);
+                    ctx.lineTo(x, y + 5);
+                    ctx.arc(x + 5, y + 5, 5, Math.PI, Math.PI * 1.5);
+                    ctx.lineTo(x + barWidth - 5, y);
+                    ctx.arc(x + barWidth - 5, y + 5, 5, Math.PI * 1.5, 0);
+                    ctx.lineTo(x + barWidth, canvas.height - padding.bottom);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Add shadow
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // Draw value on top of bar
+                    ctx.fillStyle = '#fff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold 12px Arial';
+                    if (barHeight > 30) { // Only show text if bar is tall enough
+                        ctx.fillText(Math.round(attr.value), x + barWidth / 2, y + 15);
+                    }
+                    
+                    // Reset shadow
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+                    // Draw label
+                    ctx.fillStyle = '#666';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.font = '10px Arial';
+                    
+                    // Rotate the text for better readability
+                    ctx.save();
+                    ctx.translate(x + barWidth / 2, canvas.height - padding.bottom + 10);
+                    ctx.rotate(Math.PI / 4);
+                    ctx.fillText(attr.name, 0, 0);
+                    ctx.restore();
+                });
+            }
+            
+            // Toggle graph type
+            document.getElementById('lineGraph').addEventListener('click', function() {
+                if (currentGraphType !== 'line') {
+                    currentGraphType = 'line';
+                    document.getElementById('lineGraph').classList.add('active');
+                    document.getElementById('barGraph').classList.remove('active');
+                    updateGraph();
+                }
+            });
+            
+            document.getElementById('barGraph').addEventListener('click', function() {
+                if (currentGraphType !== 'bar') {
+                    currentGraphType = 'bar';
+                    document.getElementById('barGraph').classList.add('active');
+                    document.getElementById('lineGraph').classList.remove('active');
+                    updateGraph();
+                }
+            });
+            
+            // Initialize sensitivity slider
+            const sensitivitySlider = document.getElementById('sensitivity');
+            const sensitivityValue = document.getElementById('sensitivityValue');
+            
+            sensitivitySlider.addEventListener('input', function() {
+                sensitivity = this.value / 100 * 2; // Scale to 0-2 range for more impact
+                sensitivityValue.textContent = `${this.value}%`;
+            });
+            
+            // Define contradiction rules
+            const contradictionRules = [
+                {
+                    id: 'happiness-stress',
+                    description: 'High Happiness with High Stress',
+                    check: () => {
+                        const happiness = attributes.find(a => a.id === 'happiness').value;
+                        const stress = attributes.find(a => a.id === 'stress').value;
+                        if (happiness > 70 && stress > 70) {
+                            const severity = Math.min(happiness, stress) - 70;
+                            return {
+                                contradicts: true,
+                                severity: severity / 30, // normalize to 0-1 scale
+                                message: 'High Happiness (>70) with High Stress Levels (>70)',
+                                items: ['happiness', 'stress']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'physical-energy',
+                    description: 'High Physical Health with Low Energy',
+                    check: () => {
+                        const physical = attributes.find(a => a.id === 'physical').value;
+                        const energy = attributes.find(a => a.id === 'energy').value;
+                        if (physical > 80 && energy < 30) {
+                            const severity = (physical - 80) / 20 * (30 - energy) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Physical Health (>80) with Low Energy Levels (<30)',
+                                items: ['physical', 'energy']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'career-worklife',
+                    description: 'High Career with Poor Work-Life Balance',
+                    check: () => {
+                        const career = attributes.find(a => a.id === 'career').value;
+                        const workLife = attributes.find(a => a.id === 'workLife').value;
+                        if (career > 80 && workLife < 30) {
+                            const severity = (career - 80) / 20 * (30 - workLife) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Career Progression (>80) with Poor Work-Life Balance (<30)',
+                                items: ['career', 'workLife']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'financial-career',
+                    description: 'High Financial Stability with Low Career',
+                    check: () => {
+                        const financial = attributes.find(a => a.id === 'financial').value;
+                        const career = attributes.find(a => a.id === 'career').value;
+                        if (financial > 80 && career < 30) {
+                            const severity = (financial - 80) / 20 * (30 - career) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Financial Stability (>80) with Low Career Progression (<30)',
+                                items: ['financial', 'career']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'stress-mental',
+                    description: 'High Stress with High Mental Health',
+                    check: () => {
+                        const stress = attributes.find(a => a.id === 'stress').value;
+                        const mental = attributes.find(a => a.id === 'mental').value;
+                        if (stress > 80 && mental > 80) {
+                            const severity = Math.min(stress - 80, mental - 80) / 20;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Stress Levels (>80) with High Mental Health (>80)',
+                                items: ['stress', 'mental']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'satisfaction-selfesteem',
+                    description: 'High Life Satisfaction with Low Self-Esteem',
+                    check: () => {
+                        const satisfaction = attributes.find(a => a.id === 'lifeSatisfaction').value;
+                        const selfEsteem = attributes.find(a => a.id === 'selfEsteem').value;
+                        if (satisfaction > 80 && selfEsteem < 30) {
+                            const severity = (satisfaction - 80) / 20 * (30 - selfEsteem) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Life Satisfaction (>80) with Low Self-Esteem (<30)',
+                                items: ['lifeSatisfaction', 'selfEsteem']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'intelligence-education',
+                    description: 'High Intelligence with Low Education',
+                    check: () => {
+                        const intelligence = attributes.find(a => a.id === 'intelligence').value;
+                        const education = attributes.find(a => a.id === 'education').value;
+                        if (intelligence > 80 && education < 30) {
+                            const severity = (intelligence - 80) / 20 * (30 - education) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Intelligence (>80) with Low Educational Attainment (<30)',
+                                items: ['intelligence', 'education']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'ambition-career',
+                    description: 'High Ambition with Low Career',
+                    check: () => {
+                        const ambition = attributes.find(a => a.id === 'ambition').value;
+                        const career = attributes.find(a => a.id === 'career').value;
+                        if (ambition > 80 && career < 30) {
+                            const severity = (ambition - 80) / 20 * (30 - career) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Ambition (>80) with Low Career Progression (<30)',
+                                items: ['ambition', 'career']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'social-energy',
+                    description: 'High Social Life with Low Energy',
+                    check: () => {
+                        const social = attributes.find(a => a.id === 'social').value;
+                        const energy = attributes.find(a => a.id === 'energy').value;
+                        if (social > 80 && energy < 20) {
+                            const severity = (social - 80) / 20 * (20 - energy) / 20;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'High Social Life (>80) with Very Low Energy Levels (<20)',
+                                items: ['social', 'energy']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'creativity-mental',
+                    description: 'High Creativity with Low Mental Health',
+                    check: () => {
+                        const creativity = attributes.find(a => a.id === 'creativity').value;
+                        const mental = attributes.find(a => a.id === 'mental').value;
+                        if (creativity > 80 && mental < 30) {
+                            const severity = (creativity - 80) / 20 * (30 - mental) / 30;
+                            return {
+                                contradicts: true,
+                                severity: severity, 
+                                message: 'High Creativity (>80) with Low Mental Health (<30)',
+                                items: ['creativity', 'mental']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'age-physical',
+                    description: 'High Age with High Physical Health',
+                    check: () => {
+                        const age = attributes.find(a => a.id === 'age').value;
+                        const physical = attributes.find(a => a.id === 'physical').value;
+                        if (age > 80 && physical > 80) {
+                            const severity = Math.min(age - 80, physical - 80) / 20;
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'Advanced Age (>80) with Excellent Physical Health (>80)',
+                                items: ['age', 'physical']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                },
+                {
+                    id: 'stress-ambition-career',
+                    description: 'Low Stress with Low Ambition and High Career',
+                    check: () => {
+                        const stress = attributes.find(a => a.id === 'stress').value;
+                        const ambition = attributes.find(a => a.id === 'ambition').value;
+                        const career = attributes.find(a => a.id === 'career').value;
+                        if (stress < 20 && ambition < 20 && career > 80) {
+                            const severity = ((20 - stress) / 20) * ((20 - ambition) / 20) * ((career - 80) / 20);
+                            return {
+                                contradicts: true,
+                                severity: severity,
+                                message: 'Low Stress (<20) with Low Ambition (<20) and High Career Progression (>80)',
+                                items: ['stress', 'ambition', 'career']
+                            };
+                        }
+                        return { contradicts: false };
+                    }
+                }
+            ];
+            
+            // Calculate data accuracy based on contradiction rules
+            function calculateDataAccuracy() {
+                // Start with perfect accuracy
+                let accuracy = 100;
+                const contradictions = [];
+                
+                // Check each rule and reduce accuracy for contradictions
+                contradictionRules.forEach(rule => {
+                    const result = rule.check();
+                    if (result.contradicts) {
+                        // Increase maximum penalty per contradiction to 30%
+                        const penalty = result.severity * 30;
+                        accuracy -= penalty;
+                        
+                        contradictions.push({
+                            message: result.message,
+                            items: result.items,
+                            severity: result.severity
+                        });
+                    }
+                });
+                
+                // Add an additional penalty multiplier when multiple contradictions exist
+                if (contradictions.length > 1) {
+                    // Apply exponential penalty for multiple contradictions
+                    // This ensures the score can go much lower with multiple contradictions
+                    const multiplier = 1 + (contradictions.length - 1) * 0.2;
+                    accuracy = accuracy / multiplier;
+                }
+                
+                // Ensure accuracy is within 0-100 range
+                accuracy = Math.max(0, Math.min(100, accuracy));
+                
+                return {
+                    accuracy: Math.round(accuracy),
+                    contradictions: contradictions
+                };
+            }
+            
+            // Clear existing contradiction highlights
+            function clearContradictionHighlights() {
+                // Remove existing highlight elements
+                const existingHighlights = document.querySelectorAll('.contradiction-highlight');
+                existingHighlights.forEach(el => el.remove());
+                
+                // Hide the contradiction message
+                document.getElementById('contradictionMessage').style.display = 'none';
+            }
+            
+            // Highlight contradictory sliders
+            function highlightContradictions(contradictions) {
+                // Clear existing highlights first
+                clearContradictionHighlights();
+                
+                // If no contradictions or accuracy is still good, don't show highlights
+                if (contradictions.length === 0) {
+                    return;
+                }
+                
+                // Get the contradiction message element
+                const contradictionMessage = document.getElementById('contradictionMessage');
+                const contradictionsList = document.getElementById('contradictionsList');
+                contradictionsList.innerHTML = '';
+                
+                // Only show for significant contradictions
+                const significantContradictions = contradictions.filter(c => c.severity > 0.3);
+                
+                if (significantContradictions.length === 0) {
+                    return;
+                }
+                
+                // Display the message container
+                contradictionMessage.style.display = 'block';
+                
+                // Add each contradiction to the list
+                significantContradictions.forEach(contradiction => {
+                    const li = document.createElement('li');
+                    li.textContent = contradiction.message;
+                    contradictionsList.appendChild(li);
+                    
+                    // Highlight the contradictory sliders
+                    highlightContradictorySliders(contradiction.items);
+                });
+            }
+            
+            // Highlight specific sliders that are contradicting
+            function highlightContradictorySliders(itemIds) {
+                // For each pair of contradictory sliders, add a visual connection
+                for (let i = 0; i < itemIds.length; i++) {
+                    const sliderId = itemIds[i];
+                    const sliderItem = document.getElementById(`slider-item-${sliderId}`);
+                    
+                    if (sliderItem) {
+                        // Add highlight to this slider
+                        const highlight = document.createElement('div');
+                        highlight.className = 'contradiction-highlight';
+                        
+                        // Position the highlight over the slider
+                        const rect = sliderItem.getBoundingClientRect();
+                        const parentRect = sliderItem.offsetParent.getBoundingClientRect();
+                        
+                        highlight.style.width = `${rect.width + 10}px`;
+                        highlight.style.height = `${rect.height + 10}px`;
+                        highlight.style.left = `${rect.left - parentRect.left - 5}px`;
+                        highlight.style.top = `${rect.top - parentRect.top - 5}px`;
+                        
+                        // Add to the slider container
+                        sliderItem.parentElement.appendChild(highlight);
+                    }
+                }
+            }
+            
+            // Update the data accuracy display
+            function updateDataAccuracy() {
+                const result = calculateDataAccuracy();
+                const accuracyValue = document.getElementById('accuracyValue');
+                
+                // Update the text value
+                accuracyValue.textContent = `${result.accuracy}%`;
+                
+                // Update the color based on accuracy value with new thresholds
+                if (result.accuracy >= 80) {
+                    accuracyValue.className = 'accuracy-value accuracy-high';
+                } else if (result.accuracy >= 50) {
+                    accuracyValue.className = 'accuracy-value accuracy-medium';
+                } else {
+                    accuracyValue.className = 'accuracy-value accuracy-low';
+                }
+                
+                // Highlight contradictions if accuracy is below threshold (lowered to 60%)
+                if (result.accuracy < 60) {
+                    highlightContradictions(result.contradictions);
+                } else {
+                    clearContradictionHighlights();
+                }
+            }
+            
+            // Reset all attributes to default values
+            function resetAllSliders() {
+                // Reset each attribute to its default value (50)
+                attributes.forEach(attr => {
+                    attr.value = 50;
+                    
+                    // Update the slider and display
+                    const slider = document.getElementById(attr.id);
+                    if (slider) {
+                        slider.value = 50;
+                        document.getElementById(`${attr.id}-value`).textContent = 50;
+                    }
+                });
+                
+                // Reset sensitivity to default
+                sensitivity = 0.5;
+                document.getElementById('sensitivity').value = 50;
+                document.getElementById('sensitivityValue').textContent = '50%';
+                
+                // Remove any highlight
+                if (lastAdjustedSliderId) {
+                    document.getElementById(`slider-item-${lastAdjustedSliderId}`).classList.remove('highlighted');
+                    lastAdjustedSliderId = null;
+                }
+                
+                // Clear log entries
+                const logContainer = document.getElementById('logContainer');
+                logContainer.innerHTML = '';
+                
+                // Add reset log entry
+                const resetLogEntry = document.createElement('div');
+                resetLogEntry.className = 'log-entry';
+                const resetSpan = document.createElement('span');
+                resetSpan.className = 'log-item';
+                resetSpan.innerHTML = 'All values reset to default (50)';
+                resetLogEntry.appendChild(resetSpan);
+                logContainer.appendChild(resetLogEntry);
+                
+                // Update graph
+                updateGraph();
+                
+                // Update the data accuracy display
+                updateDataAccuracy();
+                
+                // Clear any contradiction highlights
+                clearContradictionHighlights();
+            }
+            
+            // Position tooltips intelligently based on screen space
+            function positionTooltips() {
+                const tooltips = document.querySelectorAll('.tooltip');
+                
+                tooltips.forEach(tooltip => {
+                    const tooltipText = tooltip.querySelector('.tooltip-text');
+                    
+                    // Add event listeners for mouseover to position tooltip dynamically
+                    tooltip.addEventListener('mouseover', () => {
+                        // Make tooltip temporarily visible but transparent for measurement
+                        tooltipText.style.visibility = 'hidden';
+                        tooltipText.style.opacity = '0';
+                        
+                        // Reset positioning classes
+                        tooltipText.classList.remove('tooltip-below', 'tooltip-right', 'tooltip-left');
+                        
+                        // Reset positioning to default (for measurement)
+                        tooltipText.style.bottom = 'calc(100% + 10px)';
+                        tooltipText.style.top = 'auto';
+                        tooltipText.style.left = '50%';
+                        tooltipText.style.right = 'auto';
+                        tooltipText.style.transform = 'translateX(-50%)';
+                        
+                        // Force a reflow to ensure measurements are accurate
+                        void tooltipText.offsetWidth;
+                        
+                        // Get positions and dimensions
+                        const iconRect = tooltip.getBoundingClientRect();
+                        const tooltipRect = tooltipText.getBoundingClientRect();
+                        
+                        // Determine best position based on available space
+                        const spaceAbove = iconRect.top;
+                        const spaceBelow = window.innerHeight - iconRect.bottom;
+                        const spaceLeft = iconRect.left;
+                        const spaceRight = window.innerWidth - iconRect.right;
+                        
+                        // Find position with most space
+                        const maxSpace = Math.max(spaceAbove, spaceBelow, spaceLeft, spaceRight);
+                        
+                        // Position based on maximum available space
+                        if (maxSpace === spaceBelow && spaceBelow >= tooltipRect.height + 15) {
+                            // Position below
+                            tooltipText.style.bottom = 'auto';
+                            tooltipText.style.top = 'calc(100% + 10px)';
+                            tooltipText.style.left = '50%';
+                            tooltipText.style.transform = 'translateX(-50%)';
+                            tooltipText.classList.add('tooltip-below');
+                        } else if (maxSpace === spaceRight && spaceRight >= tooltipRect.width + 15) {
+                            // Position to the right
+                            tooltipText.style.bottom = 'auto';
+                            tooltipText.style.top = '50%';
+                            tooltipText.style.left = 'calc(100% + 10px)';
+                            tooltipText.style.transform = 'translateY(-50%)';
+                            tooltipText.classList.add('tooltip-right');
+                        } else if (maxSpace === spaceLeft && spaceLeft >= tooltipRect.width + 15) {
+                            // Position to the left
+                            tooltipText.style.bottom = 'auto';
+                            tooltipText.style.top = '50%';
+                            tooltipText.style.left = 'auto';
+                            tooltipText.style.right = 'calc(100% + 10px)';
+                            tooltipText.style.transform = 'translateY(-50%)';
+                            tooltipText.classList.add('tooltip-left');
+                        }
+                        // Default is above (already set)
+                        
+                        // Check horizontal bounds and adjust if needed
+                        if (!tooltipText.classList.contains('tooltip-left') && 
+                            !tooltipText.classList.contains('tooltip-right')) {
+                            
+                            const tooltipLeft = tooltipRect.left;
+                            const tooltipRight = tooltipRect.right;
+                            
+                            if (tooltipLeft < 10) {
+                                // Too close to left edge
+                                tooltipText.style.left = '0';
+                                tooltipText.style.transform = 'none';
+                            } else if (tooltipRight > window.innerWidth - 10) {
+                                // Too close to right edge
+                                tooltipText.style.left = 'auto';
+                                tooltipText.style.right = '0';
+                                tooltipText.style.transform = 'none';
+                            }
+                        }
+                        
+                        // Make the tooltip visible again
+                        tooltipText.style.visibility = '';
+                        tooltipText.style.opacity = '';
+                    });
+                });
+            }
+            
+            // Initialize the simulation
+            function init() {
+                createSliders();
+                updateGraph();
+                
+                // Initialize data accuracy
+                updateDataAccuracy();
+                
+                // Position tooltips
+                positionTooltips();
+                
+                // Handle window resize
+                window.addEventListener('resize', function() {
+                    updateGraph();
+                    
+                    // Recalculate contradiction highlights on resize
+                    const result = calculateDataAccuracy();
+                    if (result.accuracy < 70) {
+                        highlightContradictions(result.contradictions);
+                    }
+                });
+                
+                // Add reset button functionality
+                document.getElementById('resetButton').addEventListener('click', resetAllSliders);
+            }
+            
+            // Start the simulation
+            init();
+        });
+    </script>
+</body>
+</html>
