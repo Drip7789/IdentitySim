@@ -1,19 +1,24 @@
-# 🧩 IdentitySim
+## 🎮 Demo
+
+<details># 🧩 IdentitySim
 
 <div align="center">
 
+# [🔴 LIVE DEMO](https://drip7789.github.io/IdentitySim/)
+
+[![Try the Demo](https://img.shields.io/badge/TRY%20IT%20NOW-Visit%20Live%20Demo-4285F4?style=for-the-badge&logo=firefox&logoColor=white)](https://drip7789.github.io/IdentitySim/)
+
 ![GitHub stars](https://img.shields.io/github/stars/drip7789/IdentitySim?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/drip7789/IdentitySim?style=social)
-[![Live Demo](assets/image1.png)](https://drip7789.github.io/IdentitySim/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <br>
 
-<img src="https://via.placeholder.com/800x400?text=IdentitySim+Demo" alt="IdentitySim Demo" width="800"/>
+<img src="assets/image1.png" alt="IdentitySim Demo" width="800"/>
 
 **An interactive simulation exploring how 20 life attributes interconnect and affect each other**
 
-[Live Demo](https://drip7789.github.io/IdentitySim/) • [Report Bug](https://github.com/drip7789/IdentitySim/issues) • [Request Feature](https://github.com/drip7789/IdentitySim/issues)
+[Report Bug](https://github.com/drip7789/IdentitySim/issues) • [Request Feature](https://github.com/drip7789/IdentitySim/issues)
 
 </div>
 
@@ -165,7 +170,7 @@ The simulation includes 12 distinct contradiction rules that evaluate how realis
 ## 📖 Usage Guide
 
 <div align="center">
-<img src="https://via.placeholder.com/600x350?text=Usage+Animation" alt="IdentitySim Usage" width="600"/>
+<img src="assets/gif1.gif" alt="IdentitySim Usage Demo" width="600"/>
 </div>
 
 1. **Adjust Sliders**: Move any slider to see how it affects related attributes
