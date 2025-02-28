@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# [🔴 LIVE DEMO](https://drip7789.github.io/IdentitySim/)
+# [🔴 TRY IT OUT](https://drip7789.github.io/IdentitySim/)
 
 [![Try the Demo](https://img.shields.io/badge/TRY%20IT%20NOW-Visit%20Live%20Demo-4285F4?style=for-the-badge&logo=firefox&logoColor=white)](https://drip7789.github.io/IdentitySim/)
 
