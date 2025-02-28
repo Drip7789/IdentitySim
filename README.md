@@ -227,5 +227,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <div align="center">
-Made with ❤️ by <a href="https://github.com/drip7789">drip7789</a>
+PROMPTED with ❤️ by <a href="https://github.com/drip7789">drip7789 made using claude 3.7 sonnet </a>
 </div>
