@@ -4,7 +4,7 @@
 
 ![GitHub stars](https://img.shields.io/github/stars/drip7789/IdentitySim?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/drip7789/IdentitySim?style=social)
-[![Live Demo](https://img.shields.io/badge/demo-online-blue.svg)](https://drip7789.github.io/IdentitySim/)
+[![Live Demo](assets/image1.png)](https://drip7789.github.io/IdentitySim/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <br>
