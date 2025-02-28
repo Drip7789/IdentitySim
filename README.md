@@ -1,6 +1,4 @@
-## 🎮 Demo
-
-<details># 🧩 IdentitySim
+# 🧩 IdentitySim
 
 <div align="center">
 
@@ -90,13 +88,10 @@ Try finding a sustainable balance, or challenge the system by creating impossibl
 
 ## 🎮 Demo
 
-<details>
-<summary>Click to see screenshots</summary>
-<br>
-
-*Screenshots coming soon*
-
-</details>
+<div align="center">
+<img src="assets/image1.png" alt="Main Interface" width="700"/>
+<p><em>The main interface showing all life attributes and the interconnection visualization</em></p>
+</div>
 
 ## 🛠️ Technical Implementation
 
@@ -195,7 +190,10 @@ start index.html  # on Windows
 xdg-open index.html  # on Linux
 ```
 
-Alternatively, simply visit [https://drip7789.github.io/IdentitySim/](https://drip7789.github.io/IdentitySim/) to use the online version.
+<div align="center">
+<h2>⭐ <a href="https://drip7789.github.io/IdentitySim/">Try the online version now!</a> ⭐</h2>
+<i>No installation required - runs directly in your browser</i>
+</div>
 
 ## 🔮 Roadmap
 
